@@ -5,11 +5,12 @@
     <uses-feature
         android:name="android.hardware.camera.any"
         android:required="false" />
-    <uses-permission
-        android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:requestLegacyExternalStorage="true"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -32,25 +33,29 @@
             android:name=".GestureService.GestureControlAccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
             android:enabled="true"
-            android:label="@string/app_name"
+            android:label="@string/accessibility_service_label"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
-
             <!-- 配置无障碍服务属性 -->
             <meta-data
-                android:name="android.accessibility-service"
+                android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_config"
                 />
         </service>
         <service
             android:name=".GestureService.CustomerService"
             android:enabled="true"
-
             >
         </service>
-
+        <receiver android:name=".BroadcastReceiver.Receiver"
+            android:exported="false"
+            android:permission="int">
+            <intent-filter>
+                <action android:name="type"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

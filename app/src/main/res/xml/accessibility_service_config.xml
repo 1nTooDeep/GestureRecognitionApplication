@@ -1,8 +1,9 @@
 <!-- res/xml/accessibility_service_config.xml -->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:accessibilityEventTypes="typeAllMask"
-    android:packageNames="your.packagename"
+    android:description="@string/accessibility_description"
+    android:packageNames="com.intoodeep.myapplication"
     android:accessibilityFeedbackType="feedbackAllMask"
-    android:notificationTimeout="100"
+    android:notificationTimeout="1000"
     android:canPerformGestures="true"
     android:canRetrieveWindowContent="true" />

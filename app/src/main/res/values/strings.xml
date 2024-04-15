@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">CameraService</string>
+    <string name="accessibility_service_label">手势控制无障碍服务</string>
+    <string name="accessibility_description">手势控制服务：\n基于神经网络对用户手势进行识别，根据手势识别结果执行用户手势指令</string>
 </resources>
