@@ -22,7 +22,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.MyApplication">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,15 +44,15 @@
                 />
         </service>
         <service
-            android:name=".GestureService.CustomerService"
+            android:name=".GestureService.GestureRecognitionService"
             android:enabled="true"
             >
         </service>
-        <receiver android:name=".BroadcastReceiver.Receiver"
-            android:exported="false"
+        <receiver android:name=".GestureService.GestureControlAccessibilityService$Receiver"
+            android:exported="true"
             android:permission="int">
             <intent-filter>
-                <action android:name="type"/>
+                <action android:name="com.intoodeep.myapplication.BROADCAST_ACTION"/>
             </intent-filter>
         </receiver>
     </application>

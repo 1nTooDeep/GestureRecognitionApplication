@@ -13,15 +13,13 @@ import android.graphics.Point
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
-import android.os.Looper
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
-import android.view.accessibility.AccessibilityNodeInfo
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.hardware.display.DisplayManagerCompat
-import androidx.lifecycle.LifecycleService
-import com.intoodeep.myapplication.BroadcastReceiver.Receiver
+
+import com.intoodeep.myapplication.GestureRecognition.GestureEvent
 
 
 class GestureControlAccessibilityService: AccessibilityService() {
@@ -29,62 +27,41 @@ class GestureControlAccessibilityService: AccessibilityService() {
     private val gestureThread = HandlerThread("GestureControlAccessibilityServiceThread").apply { start() }
     private val gestureHandler = Handler(gestureThread.looper)
     private var lastExcuteTime = System.currentTimeMillis()
-    private val receiver = Receiver(this)
+    private val receiver = Receiver()
     var height = 0
     var width = 0
-    init {
-        val metrics = DisplayMetrics()
-        height = metrics.heightPixels
-        width = metrics.widthPixels
-    }
-    // 当有 AccessibilityEvent 发生时回调此方法
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (event == null)return
-        System.currentTimeMillis()
-
-        if (System.currentTimeMillis() - lastExcuteTime >1000 && event.eventType!=AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-            lastExcuteTime = System.currentTimeMillis()
-            slideUp()
-            Log.d(TAG,event.eventType.toString())
-        }
-
     }
-    // 当某个视图获取焦点时可能需要重写此方法来决定是否执行默认操作
     override fun onInterrupt() {
-        TODO("Not yet implemented")
+        Toast.makeText(this,"Accessibility Interrupt", Toast.LENGTH_SHORT).show()
     }
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onServiceConnected() {
         super.onServiceConnected()
-        val info = AccessibilityServiceInfo()
-        info.eventTypes = AccessibilityEvent.TYPES_ALL_MASK
-        info.feedbackType = AccessibilityServiceInfo.FEEDBACK_ALL_MASK
-        // 可以根据实际需求设置具体的反馈类型和监听事件类型
-        info.flags = AccessibilityServiceInfo.DEFAULT
-        info.packageNames = emptyArray()
-        setServiceInfo(info)
-        Log.d(TAG ,"onServiceConnected")
         val intentFilter = IntentFilter()
         intentFilter.addAction("type")
         registerReceiver(receiver,intentFilter, RECEIVER_NOT_EXPORTED)
-        Log.d(TAG,"registerReceiver")
+        Toast.makeText(this,"Accessibility Connect", Toast.LENGTH_SHORT).show()
     }
 
     override fun onCreate() {
         super.onCreate()
         println("AccessibilityService is start.")
-        var display = DisplayManagerCompat.getInstance(this).displays.get(0)
-        var p = Point()
+        val display = DisplayManagerCompat.getInstance(this).displays[0]
+        val p = Point()
         display.getRealSize(p)
         height = p.y
         width = p.x
         Log.d(TAG, "$height  $width")
+        Toast.makeText(this,"AccessibilityService is start.", Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         println("AccessibilityService is destroy.")
         unregisterReceiver(receiver)
+        Toast.makeText(this,"Accessibility Destroy", Toast.LENGTH_SHORT).show()
     }
 
     override fun bindService(service: Intent, conn: ServiceConnection, flags: Int): Boolean {
@@ -183,5 +160,29 @@ class GestureControlAccessibilityService: AccessibilityService() {
             super.onCancelled(gestureDescription)
             Log.d(TAG,"cancelled")
         }
+    }
+
+
+    inner class Receiver() : BroadcastReceiver() {
+        @RequiresApi(Build.VERSION_CODES.P)
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val type = intent?.getIntExtra("BROADCAST_ACTION",10)
+            Log.d("Receiver",type.toString())
+            when(type){
+                GestureEvent.NO_GESTURE->{}
+                GestureEvent.DOING_OTHER_THINGS->{}
+                GestureEvent.SWIPING_DOWN->{this@GestureControlAccessibilityService.takeScreenShot()}
+                GestureEvent.SWIPING_RIGHT->{this@GestureControlAccessibilityService.goBack()}
+                GestureEvent.SWIPING_UP->{this@GestureControlAccessibilityService.goToHome()}
+                GestureEvent.SLIDING_TWO_FINGERS_DOWN->{this@GestureControlAccessibilityService.slideDown()}
+                GestureEvent.SLIDING_TWO_FINGERS_LEFT->{this@GestureControlAccessibilityService.slideLeft()}
+                GestureEvent.SLIDING_TWO_FINGERS_RIGHT->{this@GestureControlAccessibilityService.slideRight()}
+                GestureEvent.SLIDING_TWO_FINGERS_UP->{this@GestureControlAccessibilityService.slideUp()}
+                GestureEvent.ZOOMING_IN_WITH_TWO_FINGERS->{this@GestureControlAccessibilityService.zoomIn()}
+                GestureEvent.ZOOMING_OUT_WITH_TWO_FINGERS->{this@GestureControlAccessibilityService.zoomOut()}
+                }
+
+        }
+
     }
 }

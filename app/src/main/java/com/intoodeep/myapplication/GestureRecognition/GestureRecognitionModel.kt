@@ -1,47 +1,38 @@
 package com.intoodeep.myapplication.GestureRecognition
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.media.Image
 import android.util.Log
 import org.pytorch.IValue
+import org.pytorch.MemoryFormat
 import org.pytorch.Module
+import org.pytorch.PyTorchAndroid
+import org.pytorch.LiteModuleLoader
 import org.pytorch.Tensor
+import org.pytorch.DType
 import java.io.File
 import java.io.FileOutputStream
-import kotlin.random.Random
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.util.LinkedList
+import com.intoodeep.myapplication.GestureRecognition.GestureRecognitionModel
 
 
-class GestureRecognitionModel(context: Context,name:String) {
+class GestureRecognitionModel() {
     val TAG = "GestureRecognitionModel"
-    val model:Module
-    init {
-        this.model = Module.load(assetFilePath(context,name))
+    lateinit var model:Module
+    val dType = DType.FLOAT64
+    fun load(context: Context,name:String){
+        this.model = LiteModuleLoader.loadModuleFromAsset(context.assets,"model.ptl")
     }
-    fun predict(tensors:ArrayList<Tensor>): IValue {
-        var input = IValue.from(tensors.get(0))
-        for(i in 0 until tensors.size){
-            if (i == 0) continue
-            val tensorIValue = IValue.from(tensors.get(i))
-            input = IValue.listFrom(input,tensorIValue)
-        }
+    fun predict(bitmaps:LinkedList<Bitmap>): IValue {
+        val input = IValue.from(convertBitmapsToTensor(bitmaps))
 
-        lateinit var output : IValue
-        try {
-            output = this.model.forward(input)
-        }
-        catch (t:Throwable){
-            t.printStackTrace()
-        }
-        Log.d(TAG,output.toString())
+        val output : IValue = this.model.forward(input)
         return output
     }
-    fun randomPredict(): List<Double> {
-        val randomValues = List(10) { Random.nextDouble() }
-        val sum = randomValues.sum()
-        val probabilities = randomValues.map { it / sum }.toMutableList()
-        val lastProbability = 1.0 - probabilities.sum()
-        probabilities += lastProbability
-        return probabilities.toList()
-    }
+
     fun assetFilePath(context: Context, assetName: String): String {
         val file = File(context.filesDir, assetName)
         if (file.exists() && file.length() > 0) {
@@ -61,4 +52,51 @@ class GestureRecognitionModel(context: Context,name:String) {
         return file.absolutePath
     }
 
+    fun convertBitmapsToTensor(bitmaps: LinkedList<Bitmap>): Tensor {
+        val byteBuffers = ArrayList<ByteBuffer>()
+        for (bitmap in bitmaps) {
+            val pixels = IntArray(bitmap.width * bitmap.height)
+            bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+
+            val rgbBuffer = ByteBuffer.allocateDirect(pixels.size * 3 * 4) // Allocate 8 bytes per float64 for each RGB channel
+            rgbBuffer.order(ByteOrder.LITTLE_ENDIAN)  // Set the byte order to Little-endian
+
+            for (i in pixels.indices) {
+                val argb = pixels[i]
+                val b = ((argb and 0xFF).toFloat()).toFloat() // Convert B from int8 to float64
+                val g = ((argb shr 8 and 0xFF).toFloat()).toFloat() // Convert G from int8 to float64
+                val r = ((argb shr 16 and 0xFF).toFloat()).toFloat() // Convert R from int8 to float64
+
+                rgbBuffer.putFloat(b) // Put B as float64
+                rgbBuffer.putFloat(g) // Put G as float64
+                rgbBuffer.putFloat(r) // Put R as float64
+            }
+
+            rgbBuffer.rewind()
+            byteBuffers.add(rgbBuffer)
+        }
+        val concatenatedBuffer = concatenateBuffers(byteBuffers)
+        val floatBuffer = concatenatedBuffer.asFloatBuffer()
+        // 1 * 3 * 30 * 112 * 112 = 1,128,960
+        val shape = longArrayOf(1, 3, 30, 112, 112)
+        val memoryFormat = MemoryFormat.CONTIGUOUS
+        return Tensor.fromBlob(floatBuffer, shape, memoryFormat)
+    }
+    private fun concatenateBuffers(buffers: ArrayList<ByteBuffer>): ByteBuffer {
+        var capacity = 0
+        for (buffer in buffers) {
+            capacity += buffer.remaining()
+        }
+        // double to float32
+        val concatenatedBuffer = ByteBuffer.allocateDirect(capacity) // Allocate 4 bytes per float64
+        concatenatedBuffer.order(ByteOrder.LITTLE_ENDIAN)
+        for (buffer in buffers) {
+            concatenatedBuffer.put(buffer)
+        }
+        concatenatedBuffer.rewind()
+
+        return concatenatedBuffer
+    }
 }
+
+

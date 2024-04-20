@@ -43,40 +43,53 @@ object CameraUtils {
             setDefaultBufferSize(previewSize.width, previewSize.height)
         }
     }
-    fun convertImageToGrayscaleResizedBitmap(image: Image, newWidth: Int, newHeight: Int): Bitmap {
+    fun convertImageToColorfulResizedBitmap(image: Image, newWidth: Int, newHeight: Int): Bitmap {
         val srcWidth = image.width
         val srcHeight = image.height
         val planes = image.planes
 
-        // 创建一个临时ARGB_8888格式的Bitmap用于存储YUV_420_888格式的灰度图像
+        // 创建一个临时ARGB_8888格式的Bitmap用于存储YUV_420_888格式的彩色图像
         val rgbBitmap = Bitmap.createBitmap(srcWidth, srcHeight, Bitmap.Config.ARGB_8888)
 
-        // 将YUV_420_888格式转换为ARGB_8888格式的灰度Bitmap
+        // 将YUV_420_888格式转换为ARGB_8888格式的彩色Bitmap
         val yBuffer = planes[0].buffer
+        val uBuffer = planes[1].buffer
+        val vBuffer = planes[2].buffer
         val yStride = planes[0].rowStride
         val uvStride = planes[1].rowStride
         val uvPixelStride = planes[1].pixelStride
 
         for (y in 0 until srcHeight) {
             val yIndex = y * yStride
-            val uvRowStart = if (y % 2 == 0) 0 else uvStride / 2 // 因为YUV_420_888格式的UV平面每两行共享一行数据
+            val uvRowIndex = (y / 2) * uvStride
             for (x in 0 until srcWidth) {
-                val uvIndex = uvRowStart + x * uvPixelStride
-                val grey = (yBuffer[yIndex + x].toInt() and 0xFF) // Y分量作为灰度值
-                rgbBitmap.setPixel(x, y, Color.argb(255, grey, grey, grey))
+                val uvIndex = uvRowIndex + (x / 2) * uvPixelStride
+                val yValue = yBuffer.get(yIndex + x).toInt() and 0xFF
+                val uValue = uBuffer.get(uvIndex).toInt() and 0xFF
+                val vValue = vBuffer.get(uvIndex).toInt() and 0xFF
+
+                // 使用YUV转换公式将YUV分量转换为RGB分量
+                val r = yValue + 1.402 * (vValue - 128)
+                val g = yValue - 0.344136 * (uValue - 128) - 0.714136 * (vValue - 128)
+                val b = yValue + 1.772 * (uValue - 128)
+
+                // 将RGB值限制在0-255范围内
+                val red = Math.max(0, Math.min(255, r.toInt()))
+                val green = Math.max(0, Math.min(255, g.toInt()))
+                val blue = Math.max(0, Math.min(255, b.toInt()))
+
+                // 将RGB值应用于生成的彩色Bitmap
+                rgbBitmap.setPixel(x, y, Color.rgb(red, green, blue))
             }
         }
 
-        // 将ARGB_8888格式的灰度Bitmap转换为指定大小的灰度Bitmap
+        // 将ARGB_8888格式的彩色Bitmap转换为指定大小的彩色Bitmap
         val resizedBitmap = Bitmap.createScaledBitmap(rgbBitmap, newWidth, newHeight, true)
 
         // 释放原始Image，防止内存泄漏
-        image.close()
+        // image.close()
 
         return resizedBitmap
-    }
-    fun bitMaplistToTensor(bitmapList:ArrayList<Bitmap>){
-
     }
 }
 
