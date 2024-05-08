@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer-array name="default_setting_id">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+    </integer-array>
+    
+    <string-array name="setting_name">
+        <item>@string/SLIDING_TWO_FINGERS_UP</item>
+        <item>@string/SLIDING_TWO_FINGERS_LEFT</item>
+        <item>@string/SLIDING_TWO_FINGERS_RIGHT</item>
+        <item>@string/SLIDING_TWO_FINGERS_DOWN</item>
+        <item>@string/ZOOMING_IN_WITH_TWO_FINGERS</item>
+        <item>@string/ZOOMING_OUT_WITH_TWO_FINGERS</item>
+        <item>@string/SWIPING_RIGHT</item>
+        <item>@string/SWIPING_UP</item>
+        <item>@string/SWIPING_DOWN</item>
+        <item>@string/THUMB_DOWN</item>
+        <item>@string/THUMB_UP</item>
+        <item>@string/STOP_SIGN</item>
+    </string-array>
+    <integer-array name="default_state">
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+    </integer-array>
+    <array name="icon">
+        <item>@drawable/slide_two_fingers_up</item>
+        <item>@drawable/slide_two_fingers_left</item>
+        <item>@drawable/slide_two_fingers_right</item>
+        <item>@drawable/slide_two_fingers_down</item>
+        <item>@drawable/zoom_in</item>
+        <item>@drawable/zoom_out</item>
+        <item>@drawable/swipe_left</item>
+        <item>@drawable/swipe_up</item>
+        <item>@drawable/swipe_down</item>
+        <item>@drawable/thumb_down</item>
+        <item>@drawable/thumb_up</item>
+        <item>@drawable/stopsign</item>
+    </array>
+</resources>

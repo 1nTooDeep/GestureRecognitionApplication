@@ -51,6 +51,16 @@ android {
 }
 
 dependencies {
+//    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
+    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
+    implementation("androidx.activity:activity:1.8.2")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("androidx.datastore:datastore-core:1.1.0")
+    implementation("androidx.room:room-common:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.6.7")
     val lifecycle_version = "2.7.0"
     val arch_version = "2.2.0"
     implementation("androidx.core:core-ktx:1.12.0")
@@ -63,7 +73,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("org.pytorch:pytorch_android_lite:2.1.0")
-//    implementation("org.pytorch:pytorch_android_torchvision:2.1.0")
+//    implementation("org.pytorch:pytorch_android_torchvision:1.9.0")
     implementation("androidx.camera:camera-core:1.3.2")
     implementation("androidx.camera:camera-lifecycle:1.3.2")
     implementation("androidx.lifecycle:lifecycle-service:$lifecycle_version")

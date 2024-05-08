@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="help_description">
+        <item>@string/SLIDING_TWO_FINGERS_UP_DESCRIPTION</item>
+        <item>@string/SLIDING_TWO_FINGERS_LEFT_DESCRIPTION</item>
+        <item>@string/SLIDING_TWO_FINGERS_RIGHT_DESCRIPTION</item>
+        <item>@string/SLIDING_TWO_FINGERS_DOWN_DESCRIPTION</item>
+        <item>@string/ZOOMING_IN_WITH_TWO_FINGERS_DESCRIPTION</item>
+        <item>@string/ZOOMING_OUT_WITH_TWO_FINGERS_DESCRIPTION</item>
+        <item>@string/SWIPING_RIGHT_DESCRIPTION</item>
+        <item>@string/SWIPING_UP_DESCRIPTION</item>
+        <item>@string/SLIDING_TWO_FINGERS_DOWN_DESCRIPTION</item>
+        <item>@string/THUMB_UP_DESCRIPTION</item>
+        <item>@string/THUMB_DOWN_DESCRIPTION</item>
+        <item>@string/STOP_SIGN_DESCRIPTION</item>
+
+    </string-array>
+</resources>

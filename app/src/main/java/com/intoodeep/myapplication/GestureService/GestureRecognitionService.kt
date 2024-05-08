@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.ImageFormat
@@ -13,8 +14,6 @@ import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
-import android.hardware.camera2.params.OutputConfiguration
-import android.hardware.camera2.params.SessionConfiguration
 import android.media.Image
 import android.media.ImageReader
 import android.os.Binder
@@ -26,6 +25,7 @@ import android.os.Looper
 import android.util.Log
 import android.util.Range
 import android.view.Surface
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleService
@@ -34,12 +34,13 @@ import com.intoodeep.myapplication.CameraUtils.convertImageToColorfulResizedBitm
 import com.intoodeep.myapplication.GestureRecognition.GestureRecognitionModel
 import com.intoodeep.myapplication.GestureService.Utils.findMaxValueIndex
 import com.intoodeep.myapplication.GestureService.Utils.rotateBitmap
+import com.intoodeep.myapplication.GestureService.Utils.mapping
+import com.intoodeep.myapplication.GestureService.Utils.softmax
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.lang.Math.exp
 import java.util.LinkedList
-import java.util.Random
-import java.util.concurrent.Executor
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 const val TAG = "GestureRecognitionService"
@@ -47,17 +48,21 @@ class GestureRecognitionService: LifecycleService() {
     private lateinit var context: Context
     // camera setting
     private val mainLooperHandler = Handler(Looper.getMainLooper())
-    private val cameraThread = HandlerThread("MyCameraThread").apply { start() }
+    private val sender = BroadcastSender()
+    private val cameraThread = HandlerThread("CameraThread").apply { start() }
     private val cameraHandler = Handler(cameraThread.looper)
     private var cameraID = "0"
     private lateinit var cameraDevice: CameraDevice
     private lateinit var cameraCaptureSession: CameraCaptureSession
+    private lateinit var sp:SharedPreferences
     private val cameraManager: CameraManager by lazy {
         applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
     }
-    var previewViewSurfaceList = ArrayList<Surface>(30)
+    private var previewViewSurfaceList = ArrayList<Surface>(30)
     private val bitmapList = LinkedList<Bitmap>()
     private val imageList = LinkedList<Image>()
+    private val indexList = LinkedList<Int>()
+    private var index = 0
     private var currentIndex = -1
     private var model = GestureRecognitionModel()
     val imageReader :ImageReader= ImageReader
@@ -70,6 +75,7 @@ class GestureRecognitionService: LifecycleService() {
     override fun onCreate() {
         super.onCreate()
         context = this
+        sp  = getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
         imageReader.setOnImageAvailableListener(object :ImageReader.OnImageAvailableListener{
             @Synchronized
             override fun onImageAvailable(reader: ImageReader?) {
@@ -78,19 +84,23 @@ class GestureRecognitionService: LifecycleService() {
                 val bitmap = convertImageToColorfulResizedBitmap(image,112,112)
                 writeLock.lock()
                 if (imageList.size<30){
+                    indexList.add(index)
                     bitmapList.add(rotateBitmap(bitmap,-90.0f))
                     imageList.add(image)
                 }else{
                     bitmapList.removeFirst()
                     bitmapList.add(rotateBitmap(bitmap,-90.0f))
+                    indexList.removeFirst()
+                    indexList.add(index)
                 }
                 currentStride += 1
+                index += 1
                 writeLock.unlock()
 
                 image.close()
             }
         },cameraHandler)
-        Log.d(TAG,"Service is Created.")
+        Toast.makeText(this,"GestureRecognitionService is start.", Toast.LENGTH_SHORT).show()
     }
     override fun onBind(intent: Intent): IBinder {
         super.onBind(intent)
@@ -98,15 +108,16 @@ class GestureRecognitionService: LifecycleService() {
     }
 
     override fun onDestroy() {
-        Log.d(TAG,"Service is destroyed.")
         super.onDestroy()
+        cameraDevice.close()
+        Toast.makeText(this,"GestureRecognitionService is start.", Toast.LENGTH_SHORT).show()
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         Log.d(TAG,"Service is started.")
-        model.load(context,"model.ptl")
+        model.load(context,"C3D.pt")
         if (checkCameraPermission()) {
             Log.d(TAG,"Permission check success")
             openCamera()
@@ -114,28 +125,30 @@ class GestureRecognitionService: LifecycleService() {
             lifecycleScope.launch {
                 delay(500)
                 while (true){
-                    delay(500)
                     // 当图片列表存储30张照片后才开始预测
-                    if(bitmapList.size == 30){
-                        if (currentStride < 3){
-                            continue
-                        }
+                    delay(100)
+                    if(bitmapList.size == 30 && currentStride > 5){
                         writeLock.lock()
                         currentStride = 0
                         val clone = bitmapList.clone() as LinkedList<Bitmap>
                         writeLock.unlock()
                         // 获取模型预测结果
                         val output = model.predict(clone)
-                        val predict = findMaxValueIndex(output.toTensor().dataAsFloatArray)
-                        Log.d(TAG,predict.toString())
-                        val intent = Intent("type")
-                        intent.setPackage("com.intoodeep.myapplication")
-                        intent.putExtra("BROADCAST_ACTION",predict)
-                        try {
-                            sendBroadcast(intent)
-                        }
-                        catch (t:Throwable){
-                            t.printStackTrace()
+                        val prob = softmax(output.toTensor().dataAsFloatArray)
+                        val predictResult = findMaxValueIndex(prob)
+                        if (sp.contains(predictResult.toString()) && sp.getBoolean(predictResult.toString(),false) && prob[predictResult] > 0.70){
+                            mapping(predictResult)
+                            sender.sendBroadcast(predictResult)
+//                            Log.d(TAG,softmax(output.toTensor().dataAsFloatArray).asList().toString())
+//                            val intent = Intent("type")
+//                            intent.setPackage("com.intoodeep.myapplication")
+//                            intent.putExtra("BROADCAST_ACTION",predictResult)
+//                            try {
+//                                sendBroadcast(intent)
+//                            }
+//                            catch (t:Throwable){
+//                                t.printStackTrace()
+//                            }
                         }
                     }
                 }
@@ -148,9 +161,7 @@ class GestureRecognitionService: LifecycleService() {
     }
 
     // Binder class
-    inner class GestureRecognitionServiceBinder: Binder(){
-        val service = this@GestureRecognitionService
-    }
+
 
     //  相机调用逻辑为: 获得相机权限 -> 打开相机-> 创建捕捉会话 -> 捕捉图片 -> 数据流传输 -> 释放相机
 
@@ -182,16 +193,7 @@ class GestureRecognitionService: LifecycleService() {
     @RequiresApi(Build.VERSION_CODES.P)
     private fun createCaptureSession() = lifecycleScope.launch(Dispatchers.Main) {
         previewViewSurfaceList.add(imageReader.surface)
-//        val outputConfiguration = OutputConfiguration(0,imageReader.surface)
-//        val sessionConfiguration = SessionConfiguration(
-//            SessionConfiguration.SESSION_REGULAR,
-//            listOf(outputConfiguration),
-//            mainExecutor,
-//            sessionStateCallback
-//            )
-//        Log.d(TAG,"createCaptureSession")
         cameraDevice.createCaptureSession(previewViewSurfaceList,sessionStateCallback,cameraHandler)
-//        cameraDevice.createCaptureSession(sessionConfiguration)
     }
 
     private fun stopCaptureSession(){
@@ -203,7 +205,7 @@ class GestureRecognitionService: LifecycleService() {
         try{
             val captureRequest = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD)
             captureRequest.set(CaptureRequest.SCALER_ROTATE_AND_CROP, 0)
-            captureRequest.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, Range(10,10))
+            captureRequest.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, Range(20,20))
             val target = imageReader.surface
             captureRequest.addTarget(target)
             cameraCaptureSession.setRepeatingRequest(
@@ -256,6 +258,24 @@ class GestureRecognitionService: LifecycleService() {
             failure: CaptureFailure
         ) {
             super.onCaptureFailed(session, request, failure)
+        }
+    }
+
+
+    inner class GestureRecognitionServiceBinder: Binder(){
+        val service = this@GestureRecognitionService
+    }
+    inner class BroadcastSender {
+        fun sendBroadcast(type:Int){
+            val intent = Intent("type")
+            intent.setPackage("com.intoodeep.myapplication")
+            intent.putExtra("BROADCAST_ACTION",index)
+            try {
+                this@GestureRecognitionService.sendBroadcast(intent)
+            }
+            catch (t:Throwable){
+                t.printStackTrace()
+            }
         }
     }
 }

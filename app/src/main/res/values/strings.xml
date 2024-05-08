@@ -2,4 +2,40 @@
     <string name="app_name">CameraService</string>
     <string name="accessibility_service_label">手势控制无障碍服务</string>
     <string name="accessibility_description">手势控制服务：\n基于神经网络对用户手势进行识别，根据手势识别结果执行用户手势指令</string>
+    <string name="more">更多</string>
+    <string name="start_alart">应用将获取您的前置摄像头权限，并利用前置摄像头捕获您的手势🥰😀🥰\n本应用无需联网，您可以放心使用🥰😀🥰</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="setting">设置</string>
+    <string name="title">"手势识别控制1.0"</string>
+    <string name="confirm">确认🥳</string>
+    <string name="cancel">取消😭</string>
+    <string name="main_service_name">👋手势控制服务</string>
+    <string name="help_title">ℹ️帮助</string>
+
+    <string name="SLIDING_TWO_FINGERS_UP">两指上滑</string>
+    <string name="SLIDING_TWO_FINGERS_LEFT">两指左滑</string>
+    <string name="SLIDING_TWO_FINGERS_RIGHT">两指右滑</string>
+    <string name="SLIDING_TWO_FINGERS_DOWN">两指下滑</string>
+    <string name="ZOOMING_IN_WITH_TWO_FINGERS">两指缩小</string>
+    <string name="ZOOMING_OUT_WITH_TWO_FINGERS">两指放大</string>
+    <string name="SWIPING_RIGHT">全手右滑</string>
+    <string name="SWIPING_UP">全手上滑</string>
+    <string name="SWIPING_DOWN">全手下滑</string>
+    <string name="THUMB_UP">拇指向上</string>
+    <string name="THUMB_DOWN">拇指向下</string>
+    <string name="STOP_SIGN">停止</string>
+
+    <string name="SLIDING_TWO_FINGERS_UP_DESCRIPTION">将食指和中指轻轻放在屏幕上，保持两指并拢，同步向上滑动两根手指。</string>
+    <string name="SLIDING_TWO_FINGERS_LEFT_DESCRIPTION">将两指并排放在屏幕右侧，然后同时向左侧滑动。</string>
+    <string name="SLIDING_TWO_FINGERS_RIGHT_DESCRIPTION">将两指放在屏幕左侧，同步向右侧滑动。</string>
+    <string name="SLIDING_TWO_FINGERS_DOWN_DESCRIPTION">将两指并排放在屏幕顶端，一起向下滑动</string>
+    <string name="ZOOMING_IN_WITH_TWO_FINGERS_DESCRIPTION">两指放在屏幕上并稍微张开，然后缓缓将两指靠近彼此</string>
+    <string name="ZOOMING_OUT_WITH_TWO_FINGERS_DESCRIPTION">两指并拢放在屏幕上，然后向外移动，扩大两指间的距离</string>
+    <string name="SWIPING_RIGHT_DESCRIPTION">放开一个手掌，然后向右滑动</string>
+    <string name="SWIPING_UP_DESCRIPTION">放开一个手掌，然后向上推动</string>
+    <string name="SWIPING_DOWN_DESCRIPTION">放开一个手掌，然后向下滑动</string>
+    <string name="THUMB_UP_DESCRIPTION">伸出您的拇指，指尖朝上</string>
+    <string name="THUMB_DOWN_DESCRIPTION">伸出拇指，指尖朝下</string>
+    <string name="STOP_SIGN_DESCRIPTION">举起一只手掌，五指张开，掌心朝向目标</string>
 </resources>

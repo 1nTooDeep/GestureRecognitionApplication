@@ -10,6 +10,7 @@ import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.graphics.Path
 import android.graphics.Point
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
@@ -161,13 +162,16 @@ class GestureControlAccessibilityService: AccessibilityService() {
             Log.d(TAG,"cancelled")
         }
     }
+    private fun openApp(name:String){
 
-
+    }
+    private fun stopMedia(){
+    }
     inner class Receiver() : BroadcastReceiver() {
         @RequiresApi(Build.VERSION_CODES.P)
         override fun onReceive(context: Context?, intent: Intent?) {
-            val type = intent?.getIntExtra("BROADCAST_ACTION",10)
-            Log.d("Receiver",type.toString())
+            val type = intent?.getIntExtra("BROADCAST_ACTION",-1)
+            Log.d(TAG,"recieve $type")
             when(type){
                 GestureEvent.NO_GESTURE->{}
                 GestureEvent.DOING_OTHER_THINGS->{}
@@ -178,6 +182,10 @@ class GestureControlAccessibilityService: AccessibilityService() {
                 GestureEvent.SLIDING_TWO_FINGERS_LEFT->{this@GestureControlAccessibilityService.slideLeft()}
                 GestureEvent.SLIDING_TWO_FINGERS_RIGHT->{this@GestureControlAccessibilityService.slideRight()}
                 GestureEvent.SLIDING_TWO_FINGERS_UP->{this@GestureControlAccessibilityService.slideUp()}
+                GestureEvent.THUMB_UP->{this@GestureControlAccessibilityService.openApp("")}
+                GestureEvent.THUMB_DOWN->{this@GestureControlAccessibilityService.openApp("")}
+//                GestureEvent.DRUMMING_FINGERS->{this@GestureControlAccessibilityService.openApp("")}
+                GestureEvent.STOP_SIGN->{this@GestureControlAccessibilityService.stopMedia()}
                 GestureEvent.ZOOMING_IN_WITH_TWO_FINGERS->{this@GestureControlAccessibilityService.zoomIn()}
                 GestureEvent.ZOOMING_OUT_WITH_TWO_FINGERS->{this@GestureControlAccessibilityService.zoomOut()}
                 }

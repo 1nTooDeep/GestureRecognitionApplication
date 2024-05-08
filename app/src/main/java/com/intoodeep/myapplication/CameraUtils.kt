@@ -1,18 +1,22 @@
 package com.intoodeep.myapplication
 
 import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Matrix
-import android.graphics.Paint
+import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.media.Image
+import android.media.Image.Plane
+import android.renderscript.Allocation
+import android.renderscript.ScriptIntrinsicYuvToRGB
 import android.util.Size
 import android.view.TextureView
 
-object CameraUtils {
 
+object CameraUtils {
+    val input: Allocation? = null
+    val out: Allocation? = null
+    private val script: ScriptIntrinsicYuvToRGB? = null
     /** Return the biggest preview size available which is smaller than the window */
     private fun findBestPreviewSize(windowSize: Size, characteristics: CameraCharacteristics):
             Size {
@@ -44,6 +48,7 @@ object CameraUtils {
         }
     }
     fun convertImageToColorfulResizedBitmap(image: Image, newWidth: Int, newHeight: Int): Bitmap {
+        image
         val srcWidth = image.width
         val srcHeight = image.height
         val planes = image.planes
@@ -91,6 +96,8 @@ object CameraUtils {
 
         return resizedBitmap
     }
+
+
 }
 
 internal object SizeComparator : Comparator<Size> {
