@@ -1,28 +1,33 @@
 package com.intoodeep.myapplication
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import com.intoodeep.myapplication.composable.BuildBooleanSettingItem
+import com.intoodeep.myapplication.composable.Header
 import com.intoodeep.myapplication.ui.theme.ApplicationTheme
-import com.intoodeep.myapplication.ui.theme.composable.BooleanSettingItem
-import com.intoodeep.myapplication.ui.theme.composable.BuildBooleanSettingItem
-import com.intoodeep.myapplication.ui.theme.composable.Header
+import com.intoodeep.myapplication.util.SettingItem
 
 val tag = "MappingActivity"
-class MappingActivity : AppCompatActivity() {
+class SettingActivity : AppCompatActivity() {
     private lateinit var sp: SharedPreferences
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(tag,"onCreate")
@@ -31,6 +36,7 @@ class MappingActivity : AppCompatActivity() {
             initSharedPreferences(sp)
         }
         enableEdgeToEdge()
+
         setContent {
             ApplicationTheme {
                 Header(
@@ -48,13 +54,16 @@ class MappingActivity : AppCompatActivity() {
                         .padding(top = 100.dp)
                     ,
                 ){
-                    val itemList = BooleanSettingItem.build(
+                    val booleanItemList = SettingItem.build(
                         this.resources.getIntArray(R.array.default_setting_id),
                         this.resources.getStringArray(R.array.setting_name),
                         this.resources.getIntArray(R.array.default_state),
+                        this.resources.getIntArray(R.array.setting_type),
                         this.resources.obtainTypedArray(R.array.icon)
                     )
-                    BuildBooleanSettingItem(this,itemList,sp)
+
+                    BuildBooleanSettingItem(this,booleanItemList,sp)
+
                 }
             }
 
@@ -64,6 +73,7 @@ class MappingActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         Log.d(tag,"onResume")
+        checkPackage(this )
     }
     private fun isInited(sp:SharedPreferences):Boolean{
         Log.w(tag,"isInited")
@@ -81,6 +91,11 @@ class MappingActivity : AppCompatActivity() {
         }
         editor.apply {
             this.commit()
+        }
+    }
+    private fun checkPackage(context: Context){
+        if(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+            requestPermissions(arrayOf(Manifest.permission.INSTALL_PACKAGES),1 )
         }
     }
 }

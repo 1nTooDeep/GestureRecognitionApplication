@@ -3,14 +3,12 @@ package com.intoodeep.myapplication.GestureRecognition
 import android.content.Context
 import android.graphics.Bitmap
 import org.pytorch.IValue
-import org.pytorch.LiteModuleLoader
 import org.pytorch.MemoryFormat
 import org.pytorch.Module
-
 import org.pytorch.Tensor
-//import org.pytorch.torchvision.TensorImageUtils.bitmapToFloat32Tensor
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.LinkedList
@@ -31,10 +29,20 @@ class GestureRecognitionModel() {
         bBuffer.order(ByteOrder.LITTLE_ENDIAN)  // Set the byte order to Little-endian
     }
     fun load(context: Context,name:String){
-        this.model = LiteModuleLoader.loadModuleFromAsset(context.assets,name)
+//        this.model = LiteModuleLoader.loadModuleFromAsset(context.assets,name)
+        this.model = Module.load(assetFilePath(context,name))
     }
-    fun predict(bitmaps: LinkedList<Bitmap>): IValue {
-        val input = IValue.from(convertBitmapsToTensor(bitmaps))
+//    fun predict(bitmaps: LinkedList<Bitmap>): IValue {
+//        val input = IValue.from(convertBitmapsToTensor(bitmaps))
+//        return model.forward(input)
+//    }
+    fun predict(byteBuffer: LinkedList<ByteBuffer>): IValue {
+        val input = IValue.from(byteBufferToTensor(byteBuffer))
+        return model.forward(input)
+    }
+
+    fun predict(tensor: Tensor): IValue {
+        val input = IValue.from(tensor)
         return model.forward(input)
     }
     fun convertBitmapsToTensor(bitmaps: LinkedList<Bitmap>): Tensor {
@@ -83,37 +91,38 @@ class GestureRecognitionModel() {
         concatenatedBuffer.rewind()
         return concatenatedBuffer
     }
-    fun assetFilePath(context: Context, assetName: String): String {
+    private fun byteBufferToTensor(byteBuffers: LinkedList<ByteBuffer>):Tensor{
+        val capacity = byteBuffers[0].capacity() * byteBuffers.size
+
+        val concatenatedBuffer = ByteBuffer.allocateDirect(capacity)
+        concatenatedBuffer.order(ByteOrder.LITTLE_ENDIAN)
+        for(byteBuffer in byteBuffers){
+            concatenatedBuffer.put(byteBuffer)
+        }
+        concatenatedBuffer.rewind()
+        val shape = longArrayOf(1,30,3,112,112)
+        return Tensor.fromBlob(concatenatedBuffer.asFloatBuffer(),shape,MemoryFormat.CONTIGUOUS)
+    }
+
+    @Throws(IOException::class)
+    fun assetFilePath(context: Context, assetName: String?): String {
         val file = File(context.filesDir, assetName)
         if (file.exists() && file.length() > 0) {
             return file.absolutePath
         }
-        context.assets.open(assetName).use { input ->
-            FileOutputStream(file).use { output ->
+
+        context.assets.open(assetName!!).use { `is` ->
+            FileOutputStream(file).use { os ->
                 val buffer = ByteArray(4 * 1024)
                 var read: Int
-                while (input.read(buffer).also { read = it } != -1) {
-                    output.write(buffer, 0, read)
+                while ((`is`.read(buffer).also { read = it }) != -1) {
+                    os.write(buffer, 0, read)
                 }
-                output.flush()
+                os.flush()
             }
+            return file.absolutePath
         }
-        return file.absolutePath
     }
-
-
-//    fun convertBitmapsToTensorByTorchVision(bitmaps: LinkedList<Bitmap>): Tensor {
-//        var tensorArray = ArrayList<Tensor>()
-//        for (bitmap in bitmaps){
-//            val tensor = bitmapToFloat32Tensor(bitmaps[0],mean,std,MemoryFormat.CONTIGUOUS)
-//            tensorArray.add(tensor)
-//        }
-//        val tensorBuffer = Tensor.allocateFloatBuffer(3 * 30 * 112 * 112)
-//        for (tensor in tensorArray){
-//            tensorBuffer.put(tensor.dataAsFloatArray)
-//        }
-//        return Tensor.fromBlob(tensorBuffer, longArrayOf(1,30,3,112,112),MemoryFormat.CONTIGUOUS)
-//    }
 }
 
 

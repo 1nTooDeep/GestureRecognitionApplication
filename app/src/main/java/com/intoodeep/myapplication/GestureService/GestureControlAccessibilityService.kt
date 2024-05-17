@@ -1,7 +1,6 @@
 package com.intoodeep.myapplication.GestureService
 
 import android.accessibilityservice.AccessibilityService
-import android.accessibilityservice.AccessibilityServiceInfo
 import android.accessibilityservice.GestureDescription
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -10,16 +9,16 @@ import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.graphics.Path
 import android.graphics.Point
-import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.SystemClock
 import android.util.Log
+import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.hardware.display.DisplayManagerCompat
-
 import com.intoodeep.myapplication.GestureRecognition.GestureEvent
 
 
@@ -54,7 +53,6 @@ class GestureControlAccessibilityService: AccessibilityService() {
         display.getRealSize(p)
         height = p.y
         width = p.x
-        Log.d(TAG, "$height  $width")
         Toast.makeText(this,"AccessibilityService is start.", Toast.LENGTH_SHORT).show()
     }
 
@@ -65,9 +63,9 @@ class GestureControlAccessibilityService: AccessibilityService() {
         Toast.makeText(this,"Accessibility Destroy", Toast.LENGTH_SHORT).show()
     }
 
-    override fun bindService(service: Intent, conn: ServiceConnection, flags: Int): Boolean {
-        return super.bindService(service, conn, flags)
-    }
+//    override fun bindService(service: Intent, conn: ServiceConnection, flags: Int): Boolean {
+//        return super.bindService(service, conn, flags)
+//    }
 
     // 上划
     fun slideUp(){
@@ -75,11 +73,12 @@ class GestureControlAccessibilityService: AccessibilityService() {
         val path = Path()
         val gestureBuild = GestureDescription.Builder()
         path.moveTo(width / 2.0f,height / 2.0f)
-        path.lineTo(width / 2.0f,height / 2.0f - 800)
-        val stroke = GestureDescription.StrokeDescription(path,0,200)
+        path.lineTo(width / 2.0f,height / 2.0f - 400)
+        val stroke = GestureDescription.StrokeDescription(path,0,100)
         gestureBuild.addStroke(stroke)
         gestureBuild.build()
         this.dispatchGesture(gestureBuild.build(),gestureResultCallback,gestureHandler)
+        Toast.makeText(this,"上滑", Toast.LENGTH_SHORT).show()
     }
     // 下滑
      fun slideDown(){
@@ -87,57 +86,72 @@ class GestureControlAccessibilityService: AccessibilityService() {
         val path = Path()
         val gestureBuild = GestureDescription.Builder()
         path.moveTo(width / 2.0f,height / 2.0f)
-        path.lineTo(width / 2.0f - 400,height / 2.0f )
-        val stroke = GestureDescription.StrokeDescription(path,0,200)
+        path.lineTo(width / 2.0f,height / 2.0f + 400)
+        val stroke = GestureDescription.StrokeDescription(path,0,100)
         gestureBuild.addStroke(stroke)
         gestureBuild.build()
         this.dispatchGesture(gestureBuild.build(),gestureResultCallback,gestureHandler)
+        Toast.makeText(this,"下滑", Toast.LENGTH_SHORT).show()
     }
      fun slideRight(){
-        Log.d(TAG,"slideRight")
-        val path = Path()
-        val gestureBuild = GestureDescription.Builder()
-        path.moveTo(width / 2.0f,height / 2.0f)
-        path.lineTo(width / 2.0f + 400,height / 2.0f )
-        val stroke = GestureDescription.StrokeDescription(path,0,200)
-        gestureBuild.addStroke(stroke)
-        gestureBuild.build()
-        this.dispatchGesture(gestureBuild.build(),gestureResultCallback,gestureHandler)
+         Log.d(TAG,"slideRight")
+         val path = Path()
+         val gestureBuild = GestureDescription.Builder()
+         path.moveTo(width / 2.0f,height / 2.0f)
+         path.lineTo(width / 2.0f + 400 ,height / 2.0f )
+         val stroke = GestureDescription.StrokeDescription(path,0,100)
+         gestureBuild.addStroke(stroke)
+         gestureBuild.build()
+         this.dispatchGesture(gestureBuild.build(),gestureResultCallback,gestureHandler)
+         Toast.makeText(this,"右滑", Toast.LENGTH_SHORT).show()
     }
      fun slideLeft() {
         Log.d(TAG,"slideLeft")
         val path = Path()
         val gestureBuild = GestureDescription.Builder()
         path.moveTo(width / 2.0f,height / 2.0f)
-        path.lineTo(width / 2.0f,height / 2.0f + 800)
-        val stroke = GestureDescription.StrokeDescription(path,0,200)
+        path.lineTo(width / 2.0f - 400 ,height / 2.0f )
+        val stroke = GestureDescription.StrokeDescription(path,0,100)
         gestureBuild.addStroke(stroke)
         gestureBuild.build()
         this.dispatchGesture(gestureBuild.build(),gestureResultCallback,gestureHandler)
+         Toast.makeText(this,"左滑", Toast.LENGTH_SHORT).show()
     }
     // 放大
     fun zoomIn(){
         Log.d(TAG,"ZoomIn")
-        val path = Path()
+        val path_1 = Path()
+        path_1.moveTo(width / 2.0f,height / 2.0f)
+        path_1.lineTo(width / 2.0f + 400,height / 2.0f + 400)
+        val path_2 = Path()
+        path_2.moveTo(width / 2.0f,height / 2.0f)
+        path_2.lineTo(width / 2.0f - 400,height / 2.0f - 400)
+        val stroke_1 = GestureDescription.StrokeDescription(path_1,0,100)
+        val stroke_2 = GestureDescription.StrokeDescription(path_2,0,100)
         val gestureBuild = GestureDescription.Builder()
-        path.moveTo(width / 2.0f,height / 2.0f)
-        path.lineTo(width / 2.0f,height / 2.0f + 800)
-        val stroke = GestureDescription.StrokeDescription(path,0,200)
-        gestureBuild.addStroke(stroke)
+        gestureBuild.addStroke(stroke_1)
+        gestureBuild.addStroke(stroke_2)
         gestureBuild.build()
         this.dispatchGesture(gestureBuild.build(),gestureResultCallback,gestureHandler)
+        Toast.makeText(this,"缩小", Toast.LENGTH_SHORT).show()
     }
     // 缩小
     fun zoomOut(){
-        Log.d(TAG,"ZoomOut")
-        val path = Path()
+        Log.d(TAG,"ZoomIn")
+        val path_1 = Path()
+        path_1.moveTo(width / 2.0f - 400,height / 2.0f - 400)
+        path_1.lineTo(width / 2.0f,height / 2.0f)
+        val path_2 = Path()
+        path_2.moveTo(width / 2.0f + 400,height / 2.0f + 400)
+        path_2.lineTo(width / 2.0f,height / 2.0f)
+        val stroke_1 = GestureDescription.StrokeDescription(path_1,0,100)
+        val stroke_2 = GestureDescription.StrokeDescription(path_2,0,100)
         val gestureBuild = GestureDescription.Builder()
-        path.moveTo(width / 2.0f,height / 2.0f)
-        path.lineTo(width / 2.0f,height / 2.0f + 800)
-        val stroke = GestureDescription.StrokeDescription(path,0,200)
-        gestureBuild.addStroke(stroke)
+        gestureBuild.addStroke(stroke_1)
+        gestureBuild.addStroke(stroke_2)
         gestureBuild.build()
         this.dispatchGesture(gestureBuild.build(),gestureResultCallback,gestureHandler)
+        Toast.makeText(this,"放大", Toast.LENGTH_SHORT).show()
     }
     // 返回
     fun goBack(){
@@ -155,23 +169,37 @@ class GestureControlAccessibilityService: AccessibilityService() {
     val gestureResultCallback = object : GestureResultCallback() {
         override fun onCompleted(gestureDescription: GestureDescription?){
             super.onCompleted(gestureDescription)
-            Log.d(TAG,"success")
         }
         override fun onCancelled(gestureDescription: GestureDescription?) {
             super.onCancelled(gestureDescription)
-            Log.d(TAG,"cancelled")
         }
     }
     private fun openApp(name:String){
-
+        val intent = Intent()
     }
     private fun stopMedia(){
+        val eventTime = SystemClock.uptimeMillis()
+        val downIntent = Intent(Intent.ACTION_MEDIA_BUTTON, null)
+        val downEvent = KeyEvent(
+            eventTime,
+            eventTime,
+            KeyEvent.ACTION_DOWN,
+            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
+            0
+        )
+        downIntent.putExtra(Intent.EXTRA_KEY_EVENT, downEvent)
+        sendOrderedBroadcast(downIntent, null)
     }
     inner class Receiver() : BroadcastReceiver() {
+        var lastTime = System.currentTimeMillis()
+        init {
+            Log.d("BroadcastReceiver","On init.")
+        }
         @RequiresApi(Build.VERSION_CODES.P)
         override fun onReceive(context: Context?, intent: Intent?) {
             val type = intent?.getIntExtra("BROADCAST_ACTION",-1)
-            Log.d(TAG,"recieve $type")
+//            Log.d(TAG,"recieve $type")
+            lastTime = System.currentTimeMillis()
             when(type){
                 GestureEvent.NO_GESTURE->{}
                 GestureEvent.DOING_OTHER_THINGS->{}

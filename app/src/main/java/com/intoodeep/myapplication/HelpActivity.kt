@@ -7,17 +7,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.intoodeep.myapplication.ui.theme.ApplicationTheme
-import com.intoodeep.myapplication.ui.theme.composable.BuildHelpItem
-import com.intoodeep.myapplication.ui.theme.composable.Header
-import com.intoodeep.myapplication.ui.theme.composable.Help
-import com.intoodeep.myapplication.ui.theme.composable.HelpItem
-import com.intoodeep.myapplication.ui.theme.composable.ServiceSwitch
-import com.intoodeep.myapplication.ui.theme.composable.StartAlart
+import com.intoodeep.myapplication.composable.BuildHelpItem
+import com.intoodeep.myapplication.composable.Header
+import com.intoodeep.myapplication.util.HelpItem
 
 class HelpActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

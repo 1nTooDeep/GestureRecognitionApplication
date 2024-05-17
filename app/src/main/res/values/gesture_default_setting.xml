@@ -25,9 +25,9 @@
         <item>@string/SWIPING_RIGHT</item>
         <item>@string/SWIPING_UP</item>
         <item>@string/SWIPING_DOWN</item>
+        <item>@string/STOP_SIGN</item>
         <item>@string/THUMB_DOWN</item>
         <item>@string/THUMB_UP</item>
-        <item>@string/STOP_SIGN</item>
     </string-array>
     <integer-array name="default_state">
         <item>0</item>
@@ -43,6 +43,20 @@
         <item>0</item>
         <item>0</item>
     </integer-array>
+    <integer-array name="setting_type">
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>0</item>
+        <item>-1</item>
+        <item>-1</item>
+    </integer-array>
     <array name="icon">
         <item>@drawable/slide_two_fingers_up</item>
         <item>@drawable/slide_two_fingers_left</item>
@@ -53,8 +67,8 @@
         <item>@drawable/swipe_left</item>
         <item>@drawable/swipe_up</item>
         <item>@drawable/swipe_down</item>
+        <item>@drawable/stopsign</item>
         <item>@drawable/thumb_down</item>
         <item>@drawable/thumb_up</item>
-        <item>@drawable/stopsign</item>
     </array>
 </resources>
